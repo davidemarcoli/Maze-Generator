@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Utils">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/src/ch/noseryoung/blj/Utils.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
