@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Drawer {
-    public void draw(Cell[][] currentGeneration, ArrayList<Cell> correctCells, int width, int height, boolean printSolution, int scale) {
+    public void draw(byte[][] currentGeneration, ArrayList<int[]> correctCells, int width, int height, boolean printSolution, int scale) {
         long startTime = System.currentTimeMillis();
 
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -19,9 +19,9 @@ public class Drawer {
 
                 Color color = Color.WHITE;
 
-                if (currentGeneration[y][x].getState() == 0 || currentGeneration[y][x].getState() == 2) {
+                if (currentGeneration[y][x] == CellType.PATH.getValue() || currentGeneration[y][x] == CellType.VISITED.getValue()) {
                     color = Color.WHITE;
-                } else if (currentGeneration[y][x].getState() == 1) {
+                } else if (currentGeneration[y][x] == CellType.WALL.getValue()) {
                     color = Color.BLACK;
                 } /*else {
                     color = new Color(54, 125, 47);
@@ -32,8 +32,8 @@ public class Drawer {
         }
 
         if (printSolution) {
-            for (Cell cell : correctCells) {
-                img.setRGB(cell.getX(), cell.getY(), 0x367D2F);
+            for (int[] cell : correctCells) {
+                img.setRGB(cell[1], cell[0], 0x367D2F);
             }
         }
 
@@ -76,7 +76,7 @@ public class Drawer {
     }
 
 
-    public Cell[][] importImage(String path) {
+    public byte[][] importImage(String path) {
 
 
         File input = new File(path);
@@ -88,11 +88,11 @@ public class Drawer {
             return null;
         }
 
-        Cell[][] grid = new Cell[image.getHeight()][image.getWidth()];
+        byte[][] grid = new byte[image.getHeight()][image.getWidth()];
 
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
-                grid[y][x] = new Cell(y, x, image.getRGB(x, y) == Color.BLACK.getRGB() ? 1 : 0);
+                grid[y][x] = image.getRGB(x, y) == Color.BLACK.getRGB() ? CellType.WALL.getValue() : CellType.PATH.getValue();
             }
         }
 

@@ -9,33 +9,33 @@ public class Generator {
     private int width;
     private int height;
     private int scale;
-    private Cell[][] currentGeneration;
-    private ArrayList<Cell> correctCells = new ArrayList<>();
+    private byte[][] currentGeneration;
+    private ArrayList<int[]> correctCells = new ArrayList<>();
     Drawer drawer = new Drawer();
     Random random = new Random();
 
     long startTime = 0;
 
-    Stack<Cell> history = new Stack<>();
+    Stack<int[]> history = new Stack<>();
 
     public Generator(int width, int height, boolean solve, int scale) {
         this.scale = scale;
         this.solve = solve;
         this.width = width % 2 == 1 ? width : width + 1;
         this.height = height % 2 == 1 ? height : height + 1;
-        currentGeneration = new Cell[this.height][this.width];
+        currentGeneration = new byte[this.height][this.width];
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
                 if (y % 2 == 0 || x % 2 == 0) {
-                    currentGeneration[y][x] = new Cell(y, x, 1);
+                    currentGeneration[y][x] = CellType.WALL.getValue();
                 } else {
-                    currentGeneration[y][x] = new Cell(y, x, 0);
+                    currentGeneration[y][x] = CellType.PATH.getValue();
                 }
             }
         }
     }
 
-    public Generator(int width, int height, Cell[][] grid) {
+    public Generator(int width, int height, byte[][] grid) {
         this.solve = true;
         this.width = width % 2 == 1 ? width : width + 1;
         this.height = height % 2 == 1 ? height : height + 1;
@@ -44,9 +44,9 @@ public class Generator {
 
 
     public void start() {
-        Cell currentCell = currentGeneration[0][0];
+        int[] currentCell = new int[]{0, 0};
         try {
-            currentCell = currentGeneration[1][1];
+            currentCell = new int[]{1, 1};
         } catch (Exception e) {
             System.out.println("Geben Sie eine Zahl grösser als 1 ein!");
             System.exit(0);
@@ -57,7 +57,7 @@ public class Generator {
 
         try {
             do {
-                currentGeneration[currentCell.getY()][currentCell.getX()].setState(2);
+                currentGeneration[currentCell[0]][currentCell[1]] = CellType.VISITED.getValue();
                 history.push(currentCell);
 
                 while (getNeightborCount(currentCell, 2) < 1 && !history.empty()) {
@@ -67,22 +67,22 @@ public class Generator {
                         currentCell = history.peek();
                 }
 
-                Cell nextCell = currentCell;
+                int[] nextCell = currentCell;
 
                 if (getNeightborCount(currentCell, 2) > 0) {
                     nextCell = getRandomNeighbor(currentCell, 2);
                 }
 
 
-                currentGeneration[(nextCell.getY() + currentCell.getY()) / 2][(nextCell.getX() + currentCell.getX()) / 2].setState(2);
+                currentGeneration[(nextCell[0] + currentCell[0]) / 2][(nextCell[1] + currentCell[1]) / 2] = CellType.VISITED.getValue();
 
 
-                if (currentCell.equals(currentGeneration[height - 2][width - 2]) || currentCell.equals(currentGeneration[height - 1][width - 2])) {
+                if (currentCell[0] == height - 2 && currentCell[1] == width - 2 || currentCell[0] == height - 1 && currentCell[1] == width - 2) {
                     saveStack(history);
                 }
 
                 currentCell = nextCell;
-                currentCell.setState(0);
+                currentGeneration[currentCell[0]][currentCell[1]] = CellType.PATH.getValue();
             } while (!(history.empty() || allVisited()));
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,11 +92,11 @@ public class Generator {
         System.out.println("Elapsed Time = " + (System.currentTimeMillis() - startTime) + "ms");
         System.out.println();
 
-        currentGeneration[0][1].setState(2);
+        currentGeneration[0][1] = CellType.VISITED.getValue();
 
         for (int i = width - 1; i > 0; i--) {
-            if (currentGeneration[height - 2][i].getState() != 1) {
-                currentGeneration[height - 1][i].setState(2);
+            if (currentGeneration[height - 2][i] != CellType.WALL.getValue()) {
+                currentGeneration[height - 1][i] = CellType.VISITED.getValue();
                 break;
             }
         }
@@ -107,9 +107,9 @@ public class Generator {
     }
 
     public void startSolver() {
-        Cell currentCell = currentGeneration[0][0];
+        int[] currentCell = new int[]{0, 0};
         try {
-            currentCell = currentGeneration[1][1];
+            currentCell = new int[]{1, 1};
         } catch (Exception e) {
             System.out.println("Geben Sie eine Zahl grösser als 1 ein!");
             System.exit(0);
@@ -119,7 +119,7 @@ public class Generator {
 
         try {
             do {
-                currentGeneration[currentCell.getY()][currentCell.getX()].setState(2);
+                currentGeneration[currentCell[0]][currentCell[1]] = CellType.VISITED.getValue();
                 history.push(currentCell);
 
                 while (getNeightborCount(currentCell, 1) < 1 && !history.empty()) {
@@ -129,13 +129,13 @@ public class Generator {
                         currentCell = history.peek();
                 }
 
-                Cell nextCell = currentCell;
+                int[] nextCell = currentCell;
 
                 if (getNeightborCount(currentCell, 1) > 0) {
                     nextCell = getRandomNeighbor(currentCell, 1);
                 }
 
-                if (currentCell.equals(currentGeneration[height - 2][width - 2]) || currentCell.equals(currentGeneration[height - 1][width - 2])) {
+                if (currentCell[0] == height - 2 && currentCell[1] == width - 2 || currentCell[0] == height - 1 && currentCell[1] == width - 2) {
                     saveStack(history);
                     break;
                 }
@@ -151,11 +151,11 @@ public class Generator {
         System.out.println("Elapsed Time = " + (System.currentTimeMillis() - startTime) + "ms");
         System.out.println();
 
-        currentGeneration[0][1].setState(2);
+        currentGeneration[0][1] = CellType.VISITED.getValue();
 
         for (int i = width - 1; i > 0; i--) {
-            if (currentGeneration[height - 2][i].getState() != 1) {
-                currentGeneration[height - 1][i].setState(2);
+            if (currentGeneration[height - 2][i] != CellType.WALL.getValue()) {
+                currentGeneration[height - 1][i] = CellType.VISITED.getValue();
                 break;
             }
         }
@@ -165,11 +165,11 @@ public class Generator {
         drawer.draw(currentGeneration, correctCells, width, height, solve, scale);
     }
 
-    public void saveStack(Stack<Cell> history) {
+    public void saveStack(Stack<int[]> history) {
 
-        Stack<Cell> path = (Stack<Cell>) history.clone();
+        Stack<int[]> path = (Stack<int[]>) history.clone();
 
-        ArrayList<Cell> correctCells = new ArrayList<>();
+        ArrayList<int[]> correctCells = new ArrayList<>();
 
         while (!path.empty()) {
             correctCells.add(path.pop());
@@ -179,48 +179,46 @@ public class Generator {
 
         try {
             for (int i = 0; i < size - 1; i++) {
-                correctCells.add(new Cell((correctCells.get(i).getY() + correctCells.get(i + 1).getY()) / 2, (correctCells.get(i).getX() + correctCells.get(i + 1).getX()) / 2, 3));
-                correctCells.get(i).setState(3);
-                correctCells.get(i + 1).setState(3);
+                correctCells.add(new int[]{(correctCells.get(i)[0] + correctCells.get(i + 1)[0]) / 2, (correctCells.get(i)[1] + correctCells.get(i + 1)[1]) / 2});
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        correctCells.add(new Cell(0, 1, 3));
-        correctCells.add(new Cell(this.height - 1, this.width - 2, 3));
+        correctCells.add(new int[]{0, 1});
+        correctCells.add(new int[]{this.height - 1, this.width - 2, 3});
 
         System.out.println("Saved Stack");
 
         this.correctCells = correctCells;
     }
 
-    public int getNeightborCount(Cell currentCell, int offset) {
+    public int getNeightborCount(int[] currentCell, int offset) {
         int neighbours = 0;
 
         try {
-            if (currentGeneration[currentCell.getY() - offset][currentCell.getX()].getState() == 0)
+            if (currentGeneration[currentCell[0] - offset][currentCell[1]] == CellType.PATH.getValue())
                 neighbours++;
         } catch (Exception ignore) {
 
         }
 
         try {
-            if (currentGeneration[currentCell.getY()][currentCell.getX() + offset].getState() == 0)
+            if (currentGeneration[currentCell[0]][currentCell[1] + offset] == CellType.PATH.getValue())
                 neighbours++;
         } catch (Exception ignore) {
 
         }
 
         try {
-            if (currentGeneration[currentCell.getY() + offset][currentCell.getX()].getState() == 0)
+            if (currentGeneration[currentCell[0] + offset][currentCell[1]] == CellType.PATH.getValue())
                 neighbours++;
         } catch (Exception ignore) {
 
         }
 
         try {
-            if (currentGeneration[currentCell.getY()][currentCell.getX() - offset].getState() == 0)
+            if (currentGeneration[currentCell[0]][currentCell[1] - offset] == CellType.PATH.getValue())
                 neighbours++;
         } catch (Exception ignore) {
 
@@ -229,13 +227,13 @@ public class Generator {
         return neighbours;
     }
 
-    public Cell[] availableCells(Cell currentCell, int offset) {
-        Cell[] neighbours = new Cell[getNeightborCount(currentCell, offset)];
+    public int[][] availableCells(int[] currentCell, int offset) {
+        int[][] neighbours = new int[getNeightborCount(currentCell, offset)][2];
         int index = 0;
 
         try {
-            if (currentGeneration[currentCell.getY() - offset][currentCell.getX()].getState() == 0) {
-                neighbours[index] = currentGeneration[currentCell.getY() - offset][currentCell.getX()];
+            if (currentGeneration[currentCell[0] - offset][currentCell[1]] == CellType.PATH.getValue()) {
+                neighbours[index] = new int[]{currentCell[0] - offset, currentCell[1]};
                 index++;
             }
         } catch (Exception ignore) {
@@ -243,8 +241,8 @@ public class Generator {
         }
 
         try {
-            if (currentGeneration[currentCell.getY()][currentCell.getX() + offset].getState() == 0) {
-                neighbours[index] = currentGeneration[currentCell.getY()][currentCell.getX() + offset];
+            if (currentGeneration[currentCell[0]][currentCell[1] + offset] == CellType.PATH.getValue()) {
+                neighbours[index] = new int[]{currentCell[0], currentCell[1] + offset};
                 index++;
             }
         } catch (Exception ignore) {
@@ -252,8 +250,8 @@ public class Generator {
         }
 
         try {
-            if (currentGeneration[currentCell.getY() + offset][currentCell.getX()].getState() == 0) {
-                neighbours[index] = currentGeneration[currentCell.getY() + offset][currentCell.getX()];
+            if (currentGeneration[currentCell[0] + offset][currentCell[1]] == CellType.PATH.getValue()) {
+                neighbours[index] = new int[]{currentCell[0] + offset, currentCell[1]};
                 index++;
             }
         } catch (Exception ignore) {
@@ -261,8 +259,8 @@ public class Generator {
         }
 
         try {
-            if (currentGeneration[currentCell.getY()][currentCell.getX() - offset].getState() == 0) {
-                neighbours[index] = currentGeneration[currentCell.getY()][currentCell.getX() - offset];
+            if (currentGeneration[currentCell[0]][currentCell[1] - offset] == CellType.PATH.getValue()) {
+                neighbours[index] = new int[]{currentCell[0], currentCell[1] - offset};
             }
         } catch (Exception ignore) {
 
@@ -271,9 +269,9 @@ public class Generator {
         return neighbours;
     }
 
-    public Cell getRandomNeighbor(Cell cell, int offset) {
+    public int[] getRandomNeighbor(int[] cell, int offset) {
 
-        Cell[] neighbors = availableCells(cell, offset);
+        int[][] neighbors = availableCells(cell, offset);
 
         return neighbors[randomMinMax(0, Math.max(neighbors.length - 1, 0))];
     }
@@ -285,7 +283,7 @@ public class Generator {
     public boolean allVisited() {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                if (currentGeneration[i][j].getState() != 2) {
+                if (currentGeneration[i][j] == CellType.VISITED.getValue()) {
                     return false;
                 }
             }
@@ -309,11 +307,11 @@ public class Generator {
         this.height = height;
     }
 
-    public Cell[][] getCurrentGeneration() {
+    public byte[][] getCurrentGeneration() {
         return currentGeneration;
     }
 
-    public void setCurrentGeneration(Cell[][] currentGeneration) {
+    public void setCurrentGeneration(byte[][] currentGeneration) {
         this.currentGeneration = currentGeneration;
     }
 }

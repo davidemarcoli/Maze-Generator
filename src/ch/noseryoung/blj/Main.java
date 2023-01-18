@@ -44,7 +44,7 @@ public class Main {
 
             Drawer drawer = new Drawer();
 
-            Cell[][] grid = drawer.importImage(path);
+            byte[][] grid = drawer.importImage(path);
 
             int[] resolution = drawer.getResolution(path);
 
