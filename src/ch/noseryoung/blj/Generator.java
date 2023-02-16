@@ -83,6 +83,8 @@ public class Generator {
 
                 currentCell = nextCell;
                 currentGeneration[currentCell[0]][currentCell[1]] = CellType.PATH.getValue();
+
+                drawer.saveImage(currentGeneration, correctCells, width, height, solve);
             } while (!(history.empty() || allVisited()));
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,6 +106,7 @@ public class Generator {
         System.out.println("Size correct Cells: " + correctCells.size());
 
         drawer.draw(currentGeneration, correctCells, width, height, solve, scale);
+        drawer.mergeImages();
     }
 
     public void startSolver() {
@@ -141,6 +144,8 @@ public class Generator {
                 }
 
                 currentCell = nextCell;
+
+                drawer.saveImage(currentGeneration, correctCells, width, height, solve);
             } while (true);
         } catch (Exception e) {
             e.printStackTrace();
@@ -163,6 +168,7 @@ public class Generator {
         System.out.println("Size correct Cells: " + correctCells.size());
 
         drawer.draw(currentGeneration, correctCells, width, height, solve, scale);
+        drawer.mergeImages();
     }
 
     public void saveStack(Stack<int[]> history) {

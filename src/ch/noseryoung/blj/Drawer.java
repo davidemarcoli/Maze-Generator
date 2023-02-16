@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 
 public class Drawer {
@@ -73,6 +74,75 @@ public class Drawer {
         System.out.println("Image Conversion");
         System.out.println("Elapsed Time = " + (System.currentTimeMillis() - startTime) + "ms");
         System.out.println();
+    }
+
+    final String FILE_DIRECTORY = "parts/";
+
+    int imageCounter = 0;
+
+    public void saveImage(byte[][] currentGeneration, ArrayList<int[]> correctCells, int width, int height, boolean printSolution) {
+        long startTime = System.currentTimeMillis();
+
+        if (imageCounter == 0) {
+            File folder = new File(FILE_DIRECTORY);
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+            purgeDirectory(folder);
+        }
+
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+
+                Color color = Color.WHITE;
+
+                if (currentGeneration[y][x] == CellType.VISITED.getValue()) {
+                    color = Color.GREEN;
+                } else if (currentGeneration[y][x] == CellType.PATH.getValue()) {
+                    color = Color.WHITE;
+                } else if (currentGeneration[y][x] == CellType.WALL.getValue()) {
+                    color = Color.BLACK;
+                } /*else {
+                    color = new Color(54, 125, 47);
+                }*/
+
+                img.setRGB(x, y, color.getRGB());
+            }
+        }
+
+        if (printSolution) {
+            for (int[] cell : correctCells) {
+                img.setRGB(cell[1], cell[0], 0x367D2F);
+            }
+        }
+
+        try {
+            ImageIO.write(img, "png", new File(FILE_DIRECTORY + "Maze_" + imageCounter++ + ".png"));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        System.out.println("Image Conversion");
+        System.out.println("Elapsed Time = " + (System.currentTimeMillis() - startTime) + "ms");
+        System.out.println();
+    }
+
+    public void mergeImages() {
+        try {
+//            Runtime.getRuntime().exec("ffmpeg -framerate 30 -i " + FILE_DIRECTORY + "Maze_%d.png -c:v libx264 -r 30 -pix_fmt yuv420p out.mp4");
+            Runtime.getRuntime().exec("ffmpeg -framerate 30 -i " + FILE_DIRECTORY + "Maze_%d.png outfile.mp4");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void purgeDirectory(File dir) {
+        for (File file: Objects.requireNonNull(dir.listFiles())) {
+            if (file.isDirectory())
+                purgeDirectory(file);
+            file.delete();
+        }
     }
 
 
