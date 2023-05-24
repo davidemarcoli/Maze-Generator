@@ -46,6 +46,7 @@ public class Generator {
     public void start() {
         int[] currentCell = new int[]{0, 0};
         try {
+            byte valueAccessTest = currentGeneration[1][1];
             currentCell = new int[]{1, 1};
         } catch (Exception e) {
             System.out.println("Geben Sie eine Zahl grösser als 1 ein!");
@@ -60,7 +61,7 @@ public class Generator {
                 currentGeneration[currentCell[0]][currentCell[1]] = CellType.VISITED.getValue();
                 history.push(currentCell);
 
-                while (getNeightborCount(currentCell, 2) < 1 && !history.empty()) {
+                while (CellUtils.getNeighborCount(currentGeneration, currentCell, 2) < 1 && !history.empty()) {
                     history.pop();
 
                     if (!history.empty())
@@ -69,8 +70,8 @@ public class Generator {
 
                 int[] nextCell = currentCell;
 
-                if (getNeightborCount(currentCell, 2) > 0) {
-                    nextCell = getRandomNeighbor(currentCell, 2);
+                if (CellUtils.getNeighborCount(currentGeneration, currentCell, 2) > 0) {
+                    nextCell = CellUtils.getRandomNeighbor(currentGeneration, currentCell, 2);
                 }
 
 
@@ -78,6 +79,7 @@ public class Generator {
 
 
                 if (currentCell[0] == height - 2 && currentCell[1] == width - 2 || currentCell[0] == height - 1 && currentCell[1] == width - 2) {
+                    System.out.println("Reached histpry dumop");
                     saveStack(history);
                 }
 
@@ -122,7 +124,7 @@ public class Generator {
                 currentGeneration[currentCell[0]][currentCell[1]] = CellType.VISITED.getValue();
                 history.push(currentCell);
 
-                while (getNeightborCount(currentCell, 1) < 1 && !history.empty()) {
+                while (CellUtils.getNeighborCount(currentGeneration, currentCell, 1) < 1 && !history.empty()) {
                     history.pop();
 
                     if (!history.empty())
@@ -131,8 +133,8 @@ public class Generator {
 
                 int[] nextCell = currentCell;
 
-                if (getNeightborCount(currentCell, 1) > 0) {
-                    nextCell = getRandomNeighbor(currentCell, 1);
+                if (CellUtils.getNeighborCount(currentGeneration, currentCell, 1) > 0) {
+                    nextCell = CellUtils.getRandomNeighbor(currentGeneration, currentCell, 1);
                 }
 
                 if (currentCell[0] == height - 2 && currentCell[1] == width - 2 || currentCell[0] == height - 1 && currentCell[1] == width - 2) {
@@ -193,93 +195,6 @@ public class Generator {
         this.correctCells = correctCells;
     }
 
-    public int getNeightborCount(int[] currentCell, int offset) {
-        int neighbours = 0;
-
-        try {
-            if (currentGeneration[currentCell[0] - offset][currentCell[1]] == CellType.PATH.getValue())
-                neighbours++;
-        } catch (Exception ignore) {
-
-        }
-
-        try {
-            if (currentGeneration[currentCell[0]][currentCell[1] + offset] == CellType.PATH.getValue())
-                neighbours++;
-        } catch (Exception ignore) {
-
-        }
-
-        try {
-            if (currentGeneration[currentCell[0] + offset][currentCell[1]] == CellType.PATH.getValue())
-                neighbours++;
-        } catch (Exception ignore) {
-
-        }
-
-        try {
-            if (currentGeneration[currentCell[0]][currentCell[1] - offset] == CellType.PATH.getValue())
-                neighbours++;
-        } catch (Exception ignore) {
-
-        }
-
-        return neighbours;
-    }
-
-    public int[][] availableCells(int[] currentCell, int offset) {
-        int[][] neighbours = new int[getNeightborCount(currentCell, offset)][2];
-        int index = 0;
-
-        try {
-            if (currentGeneration[currentCell[0] - offset][currentCell[1]] == CellType.PATH.getValue()) {
-                neighbours[index] = new int[]{currentCell[0] - offset, currentCell[1]};
-                index++;
-            }
-        } catch (Exception ignore) {
-
-        }
-
-        try {
-            if (currentGeneration[currentCell[0]][currentCell[1] + offset] == CellType.PATH.getValue()) {
-                neighbours[index] = new int[]{currentCell[0], currentCell[1] + offset};
-                index++;
-            }
-        } catch (Exception ignore) {
-
-        }
-
-        try {
-            if (currentGeneration[currentCell[0] + offset][currentCell[1]] == CellType.PATH.getValue()) {
-                neighbours[index] = new int[]{currentCell[0] + offset, currentCell[1]};
-                index++;
-            }
-        } catch (Exception ignore) {
-
-        }
-
-        try {
-            if (currentGeneration[currentCell[0]][currentCell[1] - offset] == CellType.PATH.getValue()) {
-                neighbours[index] = new int[]{currentCell[0], currentCell[1] - offset};
-            }
-        } catch (Exception ignore) {
-
-        }
-
-        return neighbours;
-    }
-
-    public int[] getRandomNeighbor(int[] cell, int offset) {
-
-        int[][] neighbors = availableCells(cell, offset);
-
-        return neighbors[randomMinMax(0, Math.max(neighbors.length - 1, 0))];
-    }
-
-    public int randomMinMax(int min, int max) {
-        return random.nextInt(max + 1 - min) + min;
-    }
-
     public boolean allVisited() {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -288,6 +203,7 @@ public class Generator {
                 }
             }
         }
+        System.out.println("All Cells visited");
         return true;
     }
 

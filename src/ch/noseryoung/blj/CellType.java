@@ -6,7 +6,7 @@ public enum CellType {
     VISITED(2),
     CORRECT(3);
 
-    private int value;
+    private final int value;
 
     CellType(int value) {
         this.value = value;
